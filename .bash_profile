@@ -22,7 +22,7 @@ unset __conda_setup
 alias source="source ~/.bash_profile"
 
 # sets your computer to sleep immediatly
-alias dodo="pmset sleepnow"
+alias tata="pmset sleepnow"
 
 # retrieves the http status code for any URL
 alias httpstatuscode="curl -w %{http_code} -s --output /dev/null $1"
@@ -101,8 +101,11 @@ mcd () { mkdir -p "$1" && cd "$1"; }        # mcd:          Makes new Dir and ju
 trash () { command mv "$@" ~/.Trash ; }     # trash:        Moves a file to the MacOS trash
 ql () { qlmanage -p "$*" >& /dev/null; }    # ql:           Opens any file in MacOS Quicklook Preview
 alias DT='tee ~/Desktop/terminalOut.txt'    # DT:           Pipe content to file on MacOS Desktop
-alias home="cd ~"
-alias project="cd Documents/Projects"
+alias Home="cd ~"
+alias Project="cd Documents/Projects"
+alias Personal="cd Documents/Personal"
+alias Downloads="cd Documents/Downloads"
+alias Software="cd Documents/Softwares"
 
 # Full Recursive Directory Listing
 alias lr='ls -R | grep ":$" | sed -e '\''s/:$//'\'' -e '\''s/[^-][^\/]*\//--/g'\'' -e '\''s/^/   /'\'' -e '\''s/-/|/'\'' | less'
