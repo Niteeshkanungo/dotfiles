@@ -1,10 +1,3 @@
-
-# Setting PATH for Python 3.12
-# The original version is saved in .zprofile.pysave
-PATH="/Library/Frameworks/Python.framework/Versions/3.12/bin:${PATH}"
-export PATH
-
-
 # # COLORS
 # PS1="Niteeshkanungo: "
 
@@ -25,9 +18,6 @@ alias localip="ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}
 
 # ENVIRONMENT CONFIGURATION
 
-# Set default blocksize for ls, df, du
-#   from this: http://hints.macworld.com/comment.php?mode=view&cid=24491
-#   ------------------------------------------------------------
 export BLOCKSIZE=1k
 
 # TERMINAL
@@ -414,18 +404,6 @@ httpHeaders () { /usr/bin/curl -I -L $@ ; }             # httpHeaders:      Grab
 #   -------------------------------------------------------------------
 httpDebug () { /usr/bin/curl $@ -o /dev/null -w "dns: %{time_namelookup} connect: %{time_connect} pretransfer: %{time_pretransfer} starttransfer: %{time_starttransfer} total: %{time_total}\n" ; }
 
-# # Git 
-
-# function parse_git_branch() {
-#     git branch 2> /dev/null | sed -n -e 's/^\* \(.*\)/[\1]/p'
-# }
-
-# COLOR_DEF=$'%f'
-# COLOR_USR=$'%F{243}'
-# COLOR_DIR=$'%F{197}'
-# COLOR_GIT=$'%F{39}'
-# setopt PROMPT_SUBST
-# export PROMPT='${COLOR_USR}%n ${COLOR_DIR}%~ ${COLOR_GIT}$(parse_git_branch)${COLOR_DEF} $ '
 
 # MacOS Specific Shortcuts
 # ###########################
