@@ -22,7 +22,12 @@ mans() {
 }
 
 # Change directory to the frontmost Finder window
+# Change directory to the frontmost Finder window (Mac only)
 cdf() {
+    if [[ "$OSTYPE" != "darwin"* ]]; then
+        echo "cdf is only supported on macOS"
+        return 1
+    fi
     local currFolderPath=$( /usr/bin/osascript <<EOT
         tell application "Finder"
             try
@@ -87,5 +92,27 @@ httpDebug() { /usr/bin/curl $@ -o /dev/null -w "dns: %{time_namelookup} connect:
 # Directory Management
 mcd() { mkdir -p "$1" && cd "$1"; }        # Makes new Dir and jumps inside
 trash() { command mv "$@" ~/.Trash ; }     # Moves a file to the MacOS trash
-ql() { qlmanage -p "$*" >& /dev/null; }    # Opens any file in MacOS Quicklook Preview
+ql() {
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        qlmanage -p "$*" >& /dev/null
+    else
+        echo "QuickLook (ql) is only supported on macOS"
+    fi
+}
 zipf() { zip -r "$1".zip "$1" ; }          # Create a ZIP archive of a folder
+
+# Function Dropdown
+fsel() {
+    if ! command -v fzf &> /dev/null; then
+        echo "fzf is required. Install with: brew install fzf"
+        return 1
+    fi
+    # Extract function names from .functions and prompt with fzf
+    # We grep for 'name() {' style definitions
+    local func=$(grep -E '^[a-zA-Z0-9_]+\(\) \{' ~/.functions | sed 's/() {.*//' | fzf --height=40% --layout=reverse --prompt='Run Function > ' --preview 'type {}')
+    
+    if [[ -n "$func" ]]; then
+        # Put the selected function name into the command line buffer
+        print -z "$func"
+    fi
+}
