@@ -2,7 +2,7 @@
 # PS1="Niteeshkanungo: "
 
 # reloads the prompt, usefull to take new modifications into account
-alias source="source ~/.zprofile"
+# alias source="source ~/.zprofile" # Antigravity: Commented out because this breaks 'source filename' behavior
 
 # sets your computer to sleep immediatly``
 alias tata="pmset sleepnow"
@@ -11,7 +11,7 @@ alias tata="pmset sleepnow"
 alias httpstatuscode="curl -w %{http_code} -s --output /dev/null $1"
 
 # grabs the latest .bash_profile file and reloads the prompt
-alias updatebashprofile="curl https://raw.github.com/niteeshkanungo/dotfiles/.zprofile > ~/.zprofile && source"
+alias update_profile="curl -L https://raw.githubusercontent.com/Niteeshkanungo/dotfiles/master/.zprofile > ~/.zprofile && source ~/.zprofile"
 
 # your local ip
 alias localip="ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p'"
@@ -61,7 +61,7 @@ alias Software="cd Documents/Softwares"
     }
 
 # showa: to remind yourself of an alias (given some part of it)
-showa () { /usr/bin/grep --color=always -i -a1 $@ ~/Library/init/bash/aliases.bash | grep -v '^\s*$' | less -FSRXc ; }
+showa () { grep --color=always -i -C 2 "$@" ~/.aliases | less -FSRXc ; }
 
 # cdf:  'Cd's to frontmost window of MacOS Finder
     cdf () {
@@ -332,7 +332,7 @@ ffe () { /usr/bin/find . -name '*'"$@" ; }  # ffe:      Find file whose name end
 #   ------------------------------------------------------------
     my_ps() { ps $@ -u $USER -o pid,%cpu,%mem,start,time,bsdtime,command ; }
 
-colors() {
+show_colors() {
     # Prints all tput colors to terminal
     for i in {0..255}; do print -Pn "%K{$i}  %k%F{$i}${(l:3::0:)i}%f " ${${(M)$((i%6)):#3}:+$'\n'}; done
 }
@@ -340,7 +340,7 @@ colors() {
 
 # NETWORKING
 
-alias myip='curl ip.appspot.com'                    # myip:         Public facing IP Address
+alias myip='curl icanhazip.com'                    # myip:         Public facing IP Address
 alias netCons='lsof -i'                             # netCons:      Show all open TCP/IP sockets
 alias flushDNS='dscacheutil -flushcache'            # flushDNS:     Flush out the DNS Cache
 alias lsock='sudo /usr/sbin/lsof -i -P'             # lsock:        Display open sockets
@@ -365,7 +365,7 @@ alias showBlocked='sudo ipfw list'                  # showBlocked:  All ipfw rul
         echo
     }
 
-weather(){ curl -s "http://api.wunderground.com/auto/wui/geo/ForecastXML/index.xml?query=${@:-<YOURZIPORLOCATION>}"|perl -ne '/<title>([^<]+)/&&printf "%s: ",$1;/<fcttext>([^<]+)/&&print $1,"\n"';}
+weather() { curl wttr.in/"${1:-}"; }
 
 # SYSTEMS OPERATIONS & INFORMATION
 
@@ -484,3 +484,4 @@ if [[ ${OSTYPE} == "darwin"* ]]; then # Only load these on a MacOS computer
     # Search for a file using MacOS Spotlight's metadata
     spotlight() { mdfind "kMDItemDisplayName == '${1}'wc"; }
 fi
+eval "$(/opt/homebrew/bin/brew shellenv)"

@@ -1,0 +1,91 @@
+# Random Password Generator
+randpassw() {
+    local MAXSIZE=${1:-10}
+    local array1=(
+        q w e r t y u i o p a s d f g h j k l z x c v b n m Q W E R T Y U I O P A S D
+        F G H J K L Z X C V B N M 1 2 3 4 5 6 7 8 9 0
+        \! \@ \$ \% \^ \& \* \! \@ \$ \% \^ \& \* \@ \$ \% \^ \& \*
+    )
+    local MODNUM=${#array1[*]}
+    local pwd_len=0
+    while [ $pwd_len -lt $MAXSIZE ]; do
+        local index=$(($RANDOM % $MODNUM))
+        echo -n "${array1[$index]}"
+        ((pwd_len++))
+    done
+    echo
+}
+
+# Search manpage
+mans() {
+    man $1 | grep -iC2 --color=always $2 | less
+}
+
+# Change directory to the frontmost Finder window
+cdf() {
+    local currFolderPath=$( /usr/bin/osascript <<EOT
+        tell application "Finder"
+            try
+                set currFolder to (folder of the front window as alias)
+            on error
+                set currFolder to (path to desktop folder as alias)
+            end try
+            POSIX path of currFolder
+        end tell
+EOT
+    )
+    echo "cd to \"$currFolderPath\""
+    cd "$currFolderPath"
+}
+
+# Universal Extract Function
+extract() {
+    if [ -f $1 ] ; then
+        case $1 in
+            *.tar.bz2)   tar xjf $1     ;;
+            *.tar.gz)    tar xzf $1     ;;
+            *.bz2)       bunzip2 $1     ;;
+            *.rar)       unrar e $1     ;;
+            *.gz)        gunzip $1      ;;
+            *.tar)       tar xf $1      ;;
+            *.tbz2)      tar xjf $1     ;;
+            *.tgz)       tar xzf $1     ;;
+            *.zip)       unzip $1       ;;
+            *.Z)         uncompress $1  ;;
+            *.7z)        7z x $1        ;;
+            *)           echo "'$1' cannot be extracted via extract()" ;;
+        esac
+    else
+        echo "'$1' is not a valid file"
+    fi
+}
+
+# Search helpers
+# ff() { /usr/bin/find . -name "$@" ; }           # Find file under the current directory (Commented: Conflicts with .aliases)
+# ffs() { /usr/bin/find . -name "$@"'*' ; }       # Find file whose name starts with a given string
+# ffe() { /usr/bin/find . -name '*' "$@" ; }      # Find file whose name ends with a given string
+spotlight() { mdfind "kMDItemDisplayName == '$@'wc"; }
+
+# System Info
+ii() {
+    echo -e "\nYou are logged on ${RED}$HOST"
+    echo -e "\nAdditionnal information:$NC " ; uname -a
+    echo -e "\n${RED}Users logged on:$NC " ; w -h
+    echo -e "\n${RED}Current date :$NC " ; date
+    echo -e "\n${RED}Machine stats :$NC " ; uptime
+    echo -e "\n${RED}Current network location :$NC " ; scselect
+    echo -e "\n${RED}Public facing IP Address :$NC " ; myip
+    echo
+}
+
+weather() { curl wttr.in/"${1:-}"; }
+
+# Web Helpers
+httpHeaders() { /usr/bin/curl -I -L $@ ; }
+httpDebug() { /usr/bin/curl $@ -o /dev/null -w "dns: %{time_namelookup} connect: %{time_connect} pretransfer: %{time_pretransfer} starttransfer: %{time_starttransfer} total: %{time_total}\n" ; }
+
+# Directory Management
+mcd() { mkdir -p "$1" && cd "$1"; }        # Makes new Dir and jumps inside
+trash() { command mv "$@" ~/.Trash ; }     # Moves a file to the MacOS trash
+ql() { qlmanage -p "$*" >& /dev/null; }    # Opens any file in MacOS Quicklook Preview
+zipf() { zip -r "$1".zip "$1" ; }          # Create a ZIP archive of a folder

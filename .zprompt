@@ -1,0 +1,15 @@
+
+# Antigravity: Modified to point to standard hidden home location instead of ~/dotfiles/
+source "${HOME}/.shared_prompt"
+
+PS1="\$(prompt_venv)" # virtual environment
+PS1+="%{${bold}%}"
+PS1+="%{${userStyle}%}%n@%m" # user@host
+PS1+="%{${white}%} "          # space
+PS1+="%{${green}%}%1~"        # working directory (short)
+PS1+="\$(prompt_git)" # Git repository details
+PS1+="%{${white}%} \$ %{${reset}%}" # `$` (and reset color)
+export PS1
+
+PS2="%{${yellow}%}→ %{${reset}%}"
+export PS2
