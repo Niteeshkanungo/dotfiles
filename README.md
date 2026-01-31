@@ -37,13 +37,35 @@ cd ~/dotfiles
 
 ## Key Functions
 
-Run `fsel` to see an interactive dropdown of all available functions:
+### Using the Function Dropdown
+
+Type `fsel` in your terminal to see an interactive dropdown of all available functions:
+
+```bash
+fsel
+```
+
+**How it works:**
+- 🔍 **Search** - Start typing to filter functions (fuzzy search)
+- ⬆️⬇️ **Navigate** - Use arrow keys to move up/down
+- ✅ **Select** - Press Enter to select a function
+- ❌ **Cancel** - Press Esc or Ctrl+C to exit
+
+When you select a function, it will be placed in your command line ready for you to add arguments and run.
+
+### Available Functions
 
 - `randpassw` - Generate random passwords
 - `extract` - Universal archive extractor
 - `weather` - Get weather for any location
 - `mcd` - Make directory and cd into it
 - `ii` - System information overview
+- `mans` - Search man pages
+- `cdf` - Change to Finder directory (Mac only)
+- `httpHeaders` - View HTTP headers
+- `trash` - Move files to trash
+- `ql` - Quick Look preview (Mac only)
+- `zipf` - Create ZIP archive
 - And many more...
 
 ## Requirements
