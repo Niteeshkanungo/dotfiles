@@ -1,0 +1,19 @@
+# macOS
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+
+# Editors / temp
+*~
+*.swp
+*.swo
+*.orig
+*.rej
+
+# JetBrains (user-specific)
+.idea/
+
+# install.sh backups (if ever created inside the repo)
+dotfiles_backup_*
+.dotfiles-backup-*

@@ -1,14 +1,21 @@
-# Shortcuts
+# ~/.aliases — shell aliases for macOS (zsh). Loaded by ~/.zshrc.
+# (Aliases that need arguments live as functions in ~/.functions.)
+
+# --- History shortcuts ---
 alias ch='history 0 | grep "git commit"'
 alias hg='history 0 | grep'
-alias yt="code $HOME/My_Drive/YouTube/Scripts/"
-alias cyt="cd $HOME/My_Drive/YouTube/Scripts/"
-alias oyt="open $HOME/My_Drive/YouTube/Scripts/"
 
-# Detect which `ls` flavor is in use
+# --- YouTube scripts (only defined when the folder exists) ---
+if [ -d "$HOME/My_Drive/YouTube/Scripts" ]; then
+    alias yt="code $HOME/My_Drive/YouTube/Scripts/"
+    alias cyt="cd $HOME/My_Drive/YouTube/Scripts/"
+    alias oyt="open $HOME/My_Drive/YouTube/Scripts/"
+fi
+
+# --- ls flavor detection (GNU vs macOS BSD ls) ---
 if ls --color >/dev/null 2>&1; then # GNU `ls`
     colorflag="--color"
-else # OS X `ls`
+else # macOS `ls`
     colorflag="-G"
 fi
 
@@ -17,51 +24,149 @@ alias la="ls -lahF ${colorflag}"
 
 # Always use color output for `ls`
 alias ls="command ls ${colorflag}"
-# For detailed colors on Mac, run 'man ls' and see the LSCOLORS section
-# Antigravity: Resetting to standard system default or monochrome preference if desired.
-# Previous yellow/custom colors commented out.
-# export LSCOLORS='Dxexcxdxcxegedabagacad' 
-# export LS_COLORS='no=00:fi=00:di=04;35:ln=01;36:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arj=01;31:*.taz=01;31:*.lzh=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.gz=01;31:*.bz2=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.jpg=01;35:*.jpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.avi=01;35:*.fli=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.ogg=01;35:*.mp3=01;35:*.wav=01;35:'
+# For detailed colors on Mac, see the LSCOLORS section in `man ls`.
 
-# Always enable colored `grep` output
+# --- Colored grep ---
 alias grep='grep --color=auto'
 alias fgrep='fgrep --color=auto'
 alias egrep='egrep --color=auto'
 
-# Update/upgrade Homebrew and their installed packages (Mac only)
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    alias update_brew='brew update; brew upgrade; brew upgrade --cask; brew link --overwrite node; brew cleanup; /opt/homebrew/bin/npm update --global; /opt/homebrew/bin/pipx upgrade-all; /opt/homebrew/bin/uv tool upgrade --all'
-fi
+# --- Preferred file operations ---
+alias cp='cp -iv'                        # Preferred 'cp' implementation
+alias mv='mv -iv'                        # Preferred 'mv' implementation
+alias mkdir='mkdir -pv'                  # Preferred 'mkdir' implementation
+alias ll='ls -FGlAhp'                    # Preferred 'ls' implementation
+alias less='less -FSRXc'                 # Preferred 'less' implementation
+alias c='clear'                          # c:            Clear terminal display
+alias DT='tee ~/Desktop/terminalOut.txt' # DT:           Pipe content to file on macOS Desktop
+alias path='print -l ${(s/:/)PATH}'      # path:         Echo all executable paths
+alias fix_stty='stty sane'               # fix_stty:     Restore terminal settings when screwed up
+alias numFiles='echo $(ls -1 | wc -l)'   # numFiles:     Count of non-hidden files in current dir
 
-# Show/hide hidden files in Finder (Mac only)
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    alias show="defaults write com.apple.finder AppleShowAllFiles -bool true && killall Finder"
-    alias hide="defaults write com.apple.finder AppleShowAllFiles -bool false && killall Finder"
-fi
+# --- Navigation ---
+alias cd..='cd ../'                      # Go back 1 directory level (for fast typers)
+alias ..='cd ../'                        # Go back 1 directory level
+alias ...='cd ../../'                    # Go back 2 directory levels
+alias .3='cd ../../../'                  # Go back 3 directory levels
+alias .4='cd ../../../../'               # Go back 4 directory levels
+alias .5='cd ../../../../../'            # Go back 5 directory levels
+alias .6='cd ../../../../../../'         # Go back 6 directory levels
+alias ~="cd ~"                           # ~:            Go Home
+alias Home="cd ~"
+alias Project="cd ~/Projects"
+alias Personal="cd ~/Documents/Personal"
+alias Downloads="cd ~/Downloads"
+alias Software="cd ~/Documents/Softwares"
 
-# To prep before screencasts (Mac only)
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    alias tut_mode='defaults write com.apple.dock autohide -bool true && killall Dock;
-                   defaults write com.apple.finder CreateDesktop -bool false && killall Finder;
-                   defaults write com.apple.menuextra.clock IsAnalog -bool true && killall SystemUIServer;
-                   rm -rf ~/.Trash/*;
-                   rm -rf ~/Downloads/*'
-    alias reg_mode='defaults write com.apple.dock autohide -bool false && killall Dock;
-                   defaults write com.apple.finder CreateDesktop -bool true && killall Finder;
-                   defaults write com.apple.menuextra.clock IsAnalog -bool false && killall SystemUIServer;'
-fi
-
-# Clean trash and downloads
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    alias clean="osascript -e 'tell application \"Finder\" to empty the trash' 2>/dev/null; rm -rf ~/Downloads/*"
+# --- Editor (Sublime when present, else $EDITOR) ---
+if command -v subl >/dev/null 2>&1; then
+    alias edit='subl'                    # edit:         Opens any file in Sublime
 else
-    alias clean="rm -rf ~/.local/share/Trash/* ~/Downloads/*"
+    alias edit='$EDITOR'
 fi
 
-# Virtual Environments
+# --- Finder ---
+alias f='open -a Finder ./'              # f:            Opens current directory in macOS Finder
+alias show="defaults write com.apple.finder AppleShowAllFiles -bool true && killall Finder"
+alias hide="defaults write com.apple.finder AppleShowAllFiles -bool false && killall Finder"
+alias finderShowHidden='defaults write com.apple.finder AppleShowAllFiles -bool true && killall Finder'
+alias finderHideHidden='defaults write com.apple.finder AppleShowAllFiles -bool false && killall Finder'
+
+# --- macOS power / identity ---
+alias tata="pmset sleepnow"              # Sleep immediately
+alias localip="ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p'"
+
+# --- Keep dotfiles fresh ---
+alias update_profile="curl -fsSL https://raw.githubusercontent.com/Niteeshkanungo/dotfiles/master/.zprofile > ~/.zprofile && source ~/.zprofile"
+
+# --- Homebrew maintenance (macOS) ---
+if command -v brew >/dev/null 2>&1; then
+    alias update_brew='brew update; brew upgrade; brew upgrade --cask; brew cleanup'
+    alias update_globals='npm update --global; pipx upgrade-all; uv tool upgrade --all'
+fi
+
+# --- Screencast prep (macOS) ---
+alias tut_mode='defaults write com.apple.dock autohide -bool true && killall Dock;
+               defaults write com.apple.finder CreateDesktop -bool false && killall Finder;
+               defaults write com.apple.menuextra.clock IsAnalog -bool true && killall SystemUIServer;
+               rm -rf ~/.Trash/*;
+               rm -rf ~/Downloads/*'
+alias reg_mode='defaults write com.apple.dock autohide -bool false && killall Dock;
+               defaults write com.apple.finder CreateDesktop -bool true && killall Finder;
+               defaults write com.apple.menuextra.clock IsAnalog -bool false && killall SystemUIServer;'
+
+# --- Cleanup ---
+alias clean="osascript -e 'tell application \"Finder\" to empty the trash' 2>/dev/null; rm -rf ~/Downloads/*"
+alias cleanupDS="find . -type f -name '*.DS_Store' -ls -delete"
+alias cleanupLS="/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -kill -r -domain local -domain system -domain user && killall Finder"
+
+# --- macOS clipboard / screenshots / sleep ---
+alias cpwd='pwd | tr -d "\n" | pbcopy'   # Copy the working path to clipboard
+alias cl="fc -e -|pbcopy"                # Copy output of last command to clipboard
+alias caff="caffeinate -ism"             # Run without letting the Mac sleep
+alias capc="screencapture -c"
+alias capic="screencapture -i -c"
+alias capiwc="screencapture -i -w -c"
+alias screensaverDesktop='/System/Library/Frameworks/ScreenSaver.framework/Resources/ScreenSaverEngine.app/Contents/MacOS/ScreenSaverEngine -background'
+alias mountReadWrite='/sbin/mount -uw /' # For use when booted into single-user
+
+# --- Spotlight maintenance (macOS) ---
+alias spot-off="sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.metadata.mds.plist"
+alias spot-on="sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.metadata.mds.plist"
+alias spot-file="lsof -c '/mds$/'"       # Which file is Spotlight stuck on?
+
+# --- Networking (macOS) ---
+alias myip='curl -fsSL https://icanhazip.com' # myip:    Public facing IP address
+alias netCons='lsof -i'                       # netCons:  Show all open TCP/IP sockets
+alias flushDNS='dscacheutil -flushcache'      # flushDNS: Flush the DNS cache
+alias lsock='sudo /usr/sbin/lsof -i -P'       # lsock:    Display open sockets
+alias lsockU='sudo /usr/sbin/lsof -nP | grep UDP'
+alias lsockT='sudo /usr/sbin/lsof -nP | grep TCP'
+alias ipInfo0='ipconfig getpacket en0'        # ipInfo0:  Connection info for en0
+alias ipInfo1='ipconfig getpacket en1'        # ipInfo1:  Connection info for en1
+alias openPorts='sudo lsof -i | grep LISTEN'  # openPorts: All listening connections
+
+# --- Processes (macOS top/ps flags) ---
+alias memHogsTop='top -l 1 -o rsize | head -20'
+alias memHogsPs='ps wwaxm -o pid,stat,vsize,rss,time,command | head -10'
+alias cpu_hogs='ps wwaxr -o pid,stat,%cpu,time,command | head -10'
+alias topForever='top -l 9999999 -s 10 -o cpu'
+alias ttop="top -R -F -s 10 -o rsize"    # Recommended 'top' to minimize resources
+
+# --- Virtual environments ---
 alias wipe_env='rm -rf ~/venvs/tutorial; python3 -m venv ~/venvs/tutorial'
 alias tut_env='source ~/venvs/tutorial/bin/activate'
 
-# Find Files and Directories
+# --- Find files and directories ---
 alias fd='find . -type d -iname'
 alias ff='find . -type f -iname'
+alias lr='ls -R | grep ":$" | sed -e '\''s/:$//'\'' -e '\''s/[^-][^\/]*\//--/g'\'' -e '\''s/^/   /'\'' -e '\''s/-/|/'\'' | less'
+
+# --- Disk images (macOS mkfile) ---
+alias make1mb='mkfile 1m ./1MB.dat'      # Creates a 1MB file of all zeros
+alias make5mb='mkfile 5m ./5MB.dat'
+alias make10mb='mkfile 10m ./10MB.dat'
+
+# --- Git shortcuts ---
+alias gs='git --no-pager status -s --untracked-files=all'
+alias ga_diff="git difftool"             # Open file in git's default diff tool <file>
+alias fetch="git fetch origin"           # Fetch from origin
+alias gamend='git commit --amend'        # Add more changes to the last commit
+alias gap='git add -p'                   # Step through each change
+alias gba='git branch -a'                # List local and remote branches
+alias gc="git --no-pager commit"         # Commit with message written in EDITOR
+alias gcl='git clone --recursive'        # Clone with all submodules
+alias gcm="git --no-pager commit -m"     # Commit with message from the command line
+alias gcv="git --no-pager commit --no-verify" # Commit without verification
+alias ginitsubs='git submodule update --init --recursive'
+alias gundo="git reset --soft HEAD^"     # Undo last commit
+alias gsearch='git rev-list --all | xargs git grep -F' # Find a string in history
+alias gss='git remote update && git status -uno'       # Are we behind remote?
+alias gsubs='git submodule update --recursive --remote'
+alias gup="git remote update -p; git merge --ff-only @{u}" # Update and merge
+alias undopush="git push -f origin HEAD^:HEAD" # Undo a git push (current branch)
+alias unstage='git reset HEAD'           # Unstage a file
+alias gl='git log --pretty=format:"%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --date=short'
+
+# --- AI CLIs ---
+alias claude-minimax='claude --model minimax-m2.7:cloud'

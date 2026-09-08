@@ -1,43 +1,43 @@
 # Dotfiles
 
-Cross-platform shell configuration for macOS and Linux.
+macOS zsh configuration.
 
 ## Features
 
-- 🎨 Clean, monochrome zsh prompt
+- 🎨 Clean, monochrome zsh prompt with git status
 - 🔍 Function dropdown with `fzf` (`fsel` command)
-- 🚀 Custom aliases and functions
-- 🌐 Works on both macOS and Linux
-- 📦 One-line installation
+- 🚀 Curated aliases and functions for macOS
+- 🧠 Optional adaptive command learning (`~/.zsh_learning.zsh`)
+- 🔐 Secrets kept out of the repo in `~/.private` (see `.private.example`)
+- 📦 Guided installation with backup
 
-## Quick Install
-
-### One-Liner (Mac & Linux)
+## Quick Install (macOS)
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/Niteeshkanungo/dotfiles/main/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/Niteeshkanungo/dotfiles/master/install.sh)
 ```
 
 ### Manual Install
 
 ```bash
-git clone https://github.com/Niteeshkanungo/dotfiles.git ~/dotfiles
-cd ~/dotfiles
+git clone git@github.com:Niteeshkanungo/dotfiles.git ~/Projects/dotfiles
+cd ~/Projects/dotfiles
 ./install.sh
 ```
 
+Existing files are backed up to `~/.dotfiles-backup-<timestamp>/` before symlinking.
+
 ## What's Included
 
-- **`.zshrc`** - Main zsh configuration
-- **`.zprofile`** - Environment variables and PATH
-- **`.functions`** - Custom shell functions
-- **`.aliases`** - Useful aliases
-- **`.zprompt`** - Minimal prompt configuration
-- **`.shared_prompt`** - Shared prompt settings
+- **`.zshrc`** - Interactive shell setup (completion, history, prompt, plugins)
+- **`.zprofile`** - Login-shell environment (Homebrew, `LANG`, `EDITOR`, `PATH`)
+- **`.aliases`** - Aliases (loaded for every interactive shell)
+- **`.functions`** - Shell functions (loaded for every interactive shell)
+- **`.zprompt`** / **`.shared_prompt`** - Minimal monochrome prompt with git status
+- **`.zsh_learning.zsh`** - Optional adaptive command tracking (local only)
+- **`.private.example`** - Template for local-only secrets (`~/.private`, never committed)
 
 ## Key Functions
-
-### Using the Function Dropdown
 
 Type `fsel` in your terminal to see an interactive dropdown of all available functions:
 
@@ -56,28 +56,41 @@ When you select a function, it will be placed in your command line ready for you
 ### Available Functions
 
 - `randpassw` - Generate random passwords
-- `extract` - Universal archive extractor
+- `extract` - Archive extractor (zip, tar, gz, bz2, xz, rar, 7z, pkg)
 - `weather` - Get weather for any location
 - `mcd` - Make directory and cd into it
 - `ii` - System information overview
 - `mans` - Search man pages
-- `cdf` - Change to Finder directory (Mac only)
-- `httpHeaders` - View HTTP headers
-- `trash` - Move files to trash
-- `ql` - Quick Look preview (Mac only)
+- `cdf` / `finderpath` - Finder integration
+- `httpHeaders` / `httpDebug` - Web debugging
+- `trash` - Move files to Trash
+- `ql` - Quick Look preview
 - `zipf` - Create ZIP archive
 - And many more...
 
 ## Requirements
 
-- zsh (auto-installed by script)
-- fzf (auto-installed by script)
-- git
+- macOS with zsh (default shell)
+- Xcode Command Line Tools (`xcode-select --install`)
+- Homebrew (https://brew.sh)
 
-## Platform Support
+The installer adds the packages `.zshrc` depends on:
 
-- ✅ macOS (Intel & Apple Silicon)
-- ✅ Ubuntu/Debian Linux
-- ✅ RHEL/CentOS/Fedora Linux
+- `zsh-completions`, `zsh-autosuggestions`, `zsh-syntax-highlighting`, `fzf`
 
-Mac-specific features (like Finder integration) are automatically disabled on Linux.
+## Secrets
+
+Never commit tokens or keys. Copy the template and keep it local-only:
+
+```bash
+cp .private.example ~/.private && chmod 600 ~/.private
+```
+
+`~/.zshrc` sources `~/.private` automatically when present.
+
+## Layout Standard
+
+- Environment (`export`, `PATH`) → `.zprofile`
+- Interactive behavior, history, completion, prompt wiring → `.zshrc`
+- Aliases (no arguments) → `.aliases`
+- Everything taking arguments → `.functions`

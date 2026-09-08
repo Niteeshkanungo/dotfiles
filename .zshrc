@@ -1,44 +1,78 @@
-# --- Zsh Auto-Completion & Highlighting Configuration ---
-# Moves to top to ensure it loads before anything else might exit.
+# ~/.zshrc — interactive shell setup for macOS (zsh).
+# Env/PATH canonical home is ~/.zprofile; this file covers interactive shells
+# (including non-login ones like tmux panes and editor terminals).
 
-HOMEBREW_PREFIX="/opt/homebrew"
+# --- Homebrew prefix (Apple Silicon: /opt/homebrew, Intel: /usr/local) ---
+if [ -x /opt/homebrew/bin/brew ]; then
+    HOMEBREW_PREFIX="/opt/homebrew"
+elif [ -x /usr/local/bin/brew ]; then
+    HOMEBREW_PREFIX="/usr/local"
+else
+    HOMEBREW_PREFIX="/opt/homebrew"
+fi
 
-# 1. Initialize Completion System
+# --- Zsh completion system (needs: brew install zsh-completions) ---
 if [ -d "$HOMEBREW_PREFIX/share/zsh-completions" ]; then
   # Add zsh-completions to fpath
   FPATH="$HOMEBREW_PREFIX/share/zsh-completions:$FPATH"
-  
+
   autoload -Uz compinit
   # -u suppresses "insecure directories" warnings (common on macOS)
   compinit -u
 fi
 
-# 2. Zsh Autosuggestions
+# --- Completion tuning (menu, grouping, typo tolerance) ---
+unset LISTMAX 2>/dev/null; export LISTMAX=0
+setopt AUTO_MENU MENU_COMPLETE
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
+zstyle ':completion:*' group-name ''
+zstyle ':completion:*:descriptions' format '%B%d%b'
+zstyle ':completion:*:options' format ' options'
+zstyle ':completion:*' menu select
+zstyle ':completion:*' verbose yes
+zstyle ':completion:*' use-cache on
+zstyle ':completion:*' cache-path "$HOME/.zcompcache"
+zstyle ':completion:*' special-dirs true
+zstyle ':completion:*:*:kill:*' force-list always
+zstyle ':completion:*' completer _complete _match _approximate
+zstyle ':completion:*' group-order commands aliases functions builtins parameters options arguments files
+zstyle ':completion:*:approximate:*' max-errors 2
+bindkey -e '^[[Z' reverse-menu-complete
+bindkey "^I" complete-word
+bindkey "^[[Z" complete-word
+
+# --- Zsh autosuggestions (needs: brew install zsh-autosuggestions) ---
 if [ -f "$HOMEBREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh" ]; then
     source "$HOMEBREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
     # Config to make it visible and robust
-    ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=cyan" 
-    ZSH_AUTOSUGGEST_STRATEGY=(history completion) 
+    ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=cyan"
+    ZSH_AUTOSUGGEST_STRATEGY=(history completion)
 fi
 
-# 3. Zsh Syntax Highlighting (Must be last of the plugins)
+# --- Zsh syntax highlighting, last of the plugins (needs: brew install zsh-syntax-highlighting) ---
 if [ -f "$HOMEBREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ]; then
     source "$HOMEBREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 fi
 
-# --- End Completion Setup ---
-
-
-# --- Dotfiles V2 Configuration ---
-
+# --- Prompt / aliases / functions / secrets ---
 autoload -Uz colors && colors
 setopt PROMPT_SUBST
+
+# Fallback for non-login shells (login shells get these from ~/.zprofile)
+: "${LANG:=en_US.UTF-8}"
+: "${EDITOR:=nano}"
+export LANG EDITOR
+export VISUAL="$EDITOR"
+export CLICOLOR=1
 
 # Don't ask if user is sure when running rm with wildcards (like bash)
 setopt rmstarsilent
 
-# If wildcard pattern has no matches, return an empty string (like bash)
+# If a wildcard pattern has no matches, return an empty string (like bash)
 setopt no_nomatch
+
+# Gentle spelling correction for commands (not correctall: too aggressive)
+setopt correct
 
 # Specify the history file and its sizes
 export HISTFILE=~/.zsh_history
@@ -52,11 +86,29 @@ setopt HIST_REDUCE_BLANKS     # Remove superfluous blanks from each command line
 setopt HIST_IGNORE_SPACE      # Ignore commands that start with a space (for secret or experimental commands)
 setopt HIST_EXPIRE_DUPS_FIRST # Expire duplicates first when trimming history
 
-# Load dotfiles (Aliases, Prompt, Private, Functions):
+# Load dotfiles (prompt, aliases, functions, secrets):
 for file in ~/.{zprompt,aliases,functions,private}; do
     [ -r "$file" ] && [ -f "$file" ] && source "$file"
 done
 unset file
+
+# Adaptive command learning (optional, local only)
+[ -f ~/.zsh_learning.zsh ] && source ~/.zsh_learning.zsh
+
+# PATH mirror of ~/.zprofile for non-login shells (idempotent: skips dups)
+for _p in "$HOME/.local/bin" \
+          "/Applications/Ollama.app/Contents/Resources" \
+          "$HOME/.antigravity/antigravity/bin" \
+          "$HOME/.antigravity-ide/antigravity-ide/bin"; do
+    if [ -d "$_p" ]; then
+        case ":$PATH:" in
+            *":$_p:"*) ;;
+            *) PATH="$_p:$PATH" ;;
+        esac
+    fi
+done
+unset _p
+export PATH
 
 # yt_init project_name # create ./project_name, set it up, but stay where you are
 yt_init() {
@@ -67,9 +119,6 @@ yt_init() {
   local orig="$PWD"
   local target="."
   local dir
-
-  # minimal sanity: require template file so we don't error later
-  # [[ -f "$template" ]] || { echo "Template not found: $template"; return 1; }  # Antigravity: Relaxed check
 
   if [[ $# -eq 1 ]]; then
     target="$1"
@@ -111,7 +160,6 @@ yt_init() {
   mkdir -p "$dir/.github"
   mkdir -p "$dir/.claude/commands"
   mkdir -p "$dir/reference-examples"
-  # cp -f "$template" "$dir/AGENTS.md" # Antigravity: Commented out as template may not exist
   : > "$dir/s.txt"
   : > "$dir/sandbox.txt"
   : > "$dir/sandbox.py"
@@ -137,9 +185,3 @@ yt_init() {
 
 # Modified to exclude forward slash for better path component deletion
 WORDCHARS='*?_-.[]~=&;!#$%^(){}<>'
-
-# Added by Agent
-export PATH="/Users/niteeshkanungo/.antigravity/antigravity/bin:$PATH"
-
-# Debug verification
-# echo "Zsh Config (V2 Updated) Loaded Successfully"

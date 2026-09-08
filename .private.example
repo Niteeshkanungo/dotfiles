@@ -1,0 +1,11 @@
+# ~/.private — local-only secrets (NEVER commit this file).
+#
+# Setup:
+#   cp .private.example ~/.private && chmod 600 ~/.private
+#   # fill in real values, then: source ~/.private
+#
+# ~/.zshrc sources ~/.private automatically when present.
+
+# export ANTHROPIC_BASE_URL="https://api.minimax.io/anthropic"
+# export ANTHROPIC_AUTH_TOKEN="..."
+# export ZHIPU_API_KEY="..."

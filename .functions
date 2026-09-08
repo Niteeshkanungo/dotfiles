@@ -1,4 +1,13 @@
-# Random Password Generator
+# ~/.functions — shell functions for macOS (zsh). Loaded by ~/.zshrc.
+# (Simple no-argument shortcuts live as aliases in ~/.aliases.)
+
+# --- cd always lists contents ---
+cd() { builtin cd "$@" && ls -FGlAhp; }
+
+# --- Make a directory and enter it ---
+mcd() { mkdir -p "$1" && cd "$1"; }      # mcd: Makes new dir and jumps inside
+
+# --- Random password generator ---
 randpassw() {
     local MAXSIZE=${1:-10}
     local array1=(
@@ -16,18 +25,22 @@ randpassw() {
     echo
 }
 
-# Search manpage
+# --- Search a manpage for a term (case insensitive) ---
+# Usage: mans <page> <term>
 mans() {
-    man $1 | grep -iC2 --color=always $2 | less
+    man "$1" | grep -iC2 --color=always "$2" | less
 }
 
-# Change directory to the frontmost Finder window
-# Change directory to the frontmost Finder window (Mac only)
+# --- Remind yourself of an alias ---
+# Usage: showa <part-of-alias>
+showa() { grep --color=always -i -C2 "$@" ~/.aliases | less -FSRXc; }
+
+# --- HTTP status code for a URL ---
+# Usage: httpstatuscode <url>
+httpstatuscode() { curl -s -o /dev/null -w '%{http_code}\n' "$1"; }
+
+# --- cd to the frontmost Finder window (macOS) ---
 cdf() {
-    if [[ "$OSTYPE" != "darwin"* ]]; then
-        echo "cdf is only supported on macOS"
-        return 1
-    fi
     local currFolderPath=$( /usr/bin/osascript <<EOT
         tell application "Finder"
             try
@@ -43,74 +56,223 @@ EOT
     cd "$currFolderPath"
 }
 
-# Universal Extract Function
-extract() {
-    if [ -f $1 ] ; then
-        case $1 in
-            *.tar.bz2)   tar xjf $1     ;;
-            *.tar.gz)    tar xzf $1     ;;
-            *.bz2)       bunzip2 $1     ;;
-            *.rar)       unrar e $1     ;;
-            *.gz)        gunzip $1      ;;
-            *.tar)       tar xf $1      ;;
-            *.tbz2)      tar xjf $1     ;;
-            *.tgz)       tar xzf $1     ;;
-            *.zip)       unzip $1       ;;
-            *.Z)         uncompress $1  ;;
-            *.7z)        7z x $1        ;;
-            *)           echo "'$1' cannot be extracted via extract()" ;;
-        esac
-    else
-        echo "'$1' is not a valid file"
-    fi
+# --- Echo the path of the frontmost Finder window (macOS) ---
+# Usage: cd $(finderpath)
+finderpath() {
+    local FINDER_PATH
+
+    FINDER_PATH=$(
+        osascript -e 'tell application "Finder"' \
+            -e "if (${1-1} <= (count Finder windows)) then" \
+            -e "get POSIX path of (target of window ${1-1} as alias)" \
+            -e 'else' \
+            -e 'get POSIX path of (desktop as alias)' \
+            -e 'end if' \
+            -e 'end tell' 2>/dev/null
+    )
+
+    echo "${FINDER_PATH}"
 }
 
-# Search helpers
-# ff() { /usr/bin/find . -name "$@" ; }           # Find file under the current directory (Commented: Conflicts with .aliases)
-# ffs() { /usr/bin/find . -name "$@"'*' ; }       # Find file whose name starts with a given string
-# ffe() { /usr/bin/find . -name '*' "$@" ; }      # Find file whose name ends with a given string
-spotlight() { mdfind "kMDItemDisplayName == '$@'wc"; }
+# --- Open files in macOS Quick Look ---
+# Usage: ql [file1] [file2]
+ql() { qlmanage -p "$@" &>/dev/null; }
 
-# System Info
+# --- Move files to the macOS Trash (safer than rm) ---
+trash() { command mv "$@" ~/.Trash; }
+
+# --- Pipe HTML to a Safari window ---
+# Usage: echo "<h1>hi</h1>" | browser
+browser() {
+    local FILE
+    FILE=$(mktemp -t browser.XXXXXX.html)
+    cat /dev/stdin >|"${FILE}"
+    open -a Safari "${FILE}"
+}
+
+# --- Remove macOS quarantine attributes from a download ---
+# Usage: unquarantine <file-or-app>
+unquarantine() {
+    local attribute
+    for attribute in com.apple.metadata:kMDItemDownloadedDate com.apple.metadata:kMDItemWhereFroms com.apple.quarantine; do
+        xattr -r -d "${attribute}" "$@"
+    done
+}
+
+# --- Search for a file with Spotlight metadata (macOS) ---
+spotlight() { mdfind "kMDItemDisplayName == '$*'wc"; }
+
+# --- Universal archive extractor (macOS) ---
+extract() {
+    if [ $# -eq 0 ]; then
+        echo "usage: extract <archive>..." >&2
+        return 1
+    fi
+    local _f
+    for _f in "$@"; do
+        if [ ! -f "$_f" ]; then
+            echo "extract: '$_f' is not a valid file" >&2
+            continue
+        fi
+        case "$_f" in
+            *.tar.bz2 | *.tbz | *.tbz2) tar xjf "$_f"     ;;
+            *.tar.gz | *.tgz)           tar xzf "$_f"     ;;
+            *.tar.xz | *.txz)           tar xJf "$_f"     ;;
+            *.tar)                      tar xf "$_f"      ;;
+            *.bz2)                      bunzip2 "$_f"     ;;
+            *.gz)                       gunzip "$_f"      ;;
+            *.xz)                       xz --decompress "$_f" ;;
+            *.zip | *.war | *.jar)      unzip "$_f"       ;;
+            *.Z)                        uncompress "$_f"  ;;
+            *.rar)  command -v unrar >/dev/null 2>&1 || { echo "extract: 'unrar' not installed (brew install unar)" >&2; continue; }
+                    unrar x "$_f" ;;
+            *.7z)   command -v 7z >/dev/null 2>&1 || { echo "extract: '7z' not installed (brew install sevenzip)" >&2; continue; }
+                    7z x "$_f" ;;
+            *.pkg)  pkgutil --expand "$_f" "${_f:0:-4}" ;;
+            *)      echo "'$_f' cannot be extracted via extract" >&2 ;;
+        esac
+    done
+    unset _f
+}
+
+# --- System information overview (macOS) ---
 ii() {
-    echo -e "\nYou are logged on ${RED}$HOST"
-    echo -e "\nAdditionnal information:$NC " ; uname -a
-    echo -e "\n${RED}Users logged on:$NC " ; w -h
-    echo -e "\n${RED}Current date :$NC " ; date
-    echo -e "\n${RED}Machine stats :$NC " ; uptime
-    echo -e "\n${RED}Current network location :$NC " ; scselect
-    echo -e "\n${RED}Public facing IP Address :$NC " ; myip
+    echo "\nLogged on: $USER@$HOST"
+    echo "\nSystem:"; uname -a
+    echo "\nUsers logged on:"; w -h
+    echo "\nCurrent date:"; date
+    echo "\nMachine stats:"; uptime
+    if command -v scselect >/dev/null 2>&1; then
+        echo "\nNetwork location:"; scselect 2>/dev/null || true
+    fi
+    echo "\nPublic IP:"; curl -fsSL --max-time 10 https://icanhazip.com || echo "(unavailable)"
     echo
 }
 
-weather() { curl wttr.in/"${1:-}"; }
+# --- Weather (wttr.in) ---
+# Usage: weather [location]
+weather() { curl -s "https://wttr.in/${1:-}"; }
 
-# Web Helpers
-httpHeaders() { /usr/bin/curl -I -L $@ ; }
-httpDebug() { /usr/bin/curl $@ -o /dev/null -w "dns: %{time_namelookup} connect: %{time_connect} pretransfer: %{time_pretransfer} starttransfer: %{time_starttransfer} total: %{time_total}\n" ; }
+# --- Web helpers ---
+httpHeaders() { /usr/bin/curl -I -L "$@" ; }  # Grabs headers from a web page
+httpDebug() { /usr/bin/curl "$@" -o /dev/null -w "dns: %{time_namelookup} connect: %{time_connect} pretransfer: %{time_pretransfer} starttransfer: %{time_starttransfer} total: %{time_total}\n" ; }
 
-# Directory Management
-mcd() { mkdir -p "$1" && cd "$1"; }        # Makes new Dir and jumps inside
-trash() { command mv "$@" ~/.Trash ; }     # Moves a file to the MacOS trash
-ql() {
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        qlmanage -p "$*" >& /dev/null
-    else
-        echo "QuickLook (ql) is only supported on macOS"
-    fi
+# --- Create a ZIP archive of a folder ---
+# Usage: zipf <folder>
+zipf() { zip -r "$1".zip "$1" ; }
+
+# --- Show processes owned by me ---
+my_ps() { ps $@ -u $USER -o pid,%cpu,%mem,start,time,bsdtime,command ; }
+
+# --- Find the pid of a process by name pattern ---
+# E.g. findPid '/d$/' finds pids of processes with names ending in 'd'
+findPid() { lsof -t -c "$@" ; }
+
+# --- Print all terminal colors ---
+show_colors() {
+    for i in {0..255}; do print -Pn "%K{$i}  %k%F{$i}${(l:3::0:)i}%f " ${${(M)$((i%6)):#3}:+$'\n'}; done
 }
-zipf() { zip -r "$1".zip "$1" ; }          # Create a ZIP archive of a folder
 
-# Function Dropdown
+# --- Git: add files (default: all) ---
+ga() { git add "${@:-.}"; }
+
+# --- Git: apply .gitignore changes to already-committed files ---
+applyignore() {
+    git ls-files -ci --exclude-standard -z | xargs -0 git rm --cached
+}
+
+# --- Git: print the HTTPS URL of the current repo ---
+gurl() {
+    command -v perl >/dev/null 2>&1 || { echo "gurl: 'perl' not found" >&2; return 1; }
+    local remote remotename host user_repo
+
+    remotename="${*:-origin}"
+    remote="$(git remote -v | awk '/^'"${remotename}"'.*\(push\)$/ {print $2}')"
+    [[ "${remote}" ]] || return
+    host="$(echo "${remote}" | perl -pe 's/.*@//;s/:.*//')"
+    user_repo="$(echo "${remote}" | perl -pe 's/.*://;s/\.git$//')"
+    echo "https://${host}/${user_repo}"
+}
+
+# --- Git: reset HEAD to a commit (asks before destroying work) ---
+# Usage: rollback <commit>
+rollback() (
+    _is_clean_() {
+        if [[ $(git diff --shortstat 2>/dev/null | tail -n1) != "" ]]; then
+            echo "Your branch is dirty, please commit your changes"
+            return 1
+        fi
+        return 0
+    }
+
+    _commit_exists_() {
+        git rev-list --quiet "$1"
+        status=$?
+        if [ $status -ne 0 ]; then
+            echo "Commit ${1} does not exist"
+            return 1
+        fi
+        return 0
+    }
+
+    _keep_changes_() {
+        while true; do
+            read -r -p "Do you want to keep all changes from rolled back revisions in your working tree? [Y/N]" RESP
+            case $RESP in
+
+                [yY])
+                    echo "Rolling back to commit ${1} with unstaged changes"
+                    git reset "$1"
+                    break
+                    ;;
+                [nN])
+                    echo "Rolling back to commit ${1} with a clean working tree"
+                    git reset --hard "$1"
+                    break
+                    ;;
+                *)
+                    echo "Please enter Y or N"
+                    ;;
+            esac
+        done
+    }
+
+    if [ -n "$(git symbolic-ref HEAD 2>/dev/null)" ]; then
+        if _is_clean_; then
+            if _commit_exists_ "$1"; then
+
+                while true; do
+                    read -r -p "WARNING: This will change your history and move the current HEAD back to commit ${1}, continue? [Y/N]" RESP
+                    case $RESP in
+
+                        [yY])
+                            _keep_changes_ "$1"
+                            break
+                            ;;
+                        [nN])
+                            break
+                            ;;
+                        *)
+                            echo "Please enter Y or N"
+                            ;;
+                    esac
+                done
+            fi
+        fi
+    else
+        echo "you're currently not in a git repository"
+    fi
+)
+
+# --- Interactive function picker (needs fzf: brew install fzf) ---
 fsel() {
     if ! command -v fzf &> /dev/null; then
         echo "fzf is required. Install with: brew install fzf"
         return 1
     fi
-    # Extract function names from .functions and prompt with fzf
-    # We grep for 'name() {' style definitions
+    # Extract function names from ~/.functions and pick with fzf
     local func=$(grep -E '^[a-zA-Z0-9_]+\(\) \{' ~/.functions | sed 's/() {.*//' | fzf --height=40% --layout=reverse --prompt='Run Function > ' --preview 'type {}')
-    
+
     if [[ -n "$func" ]]; then
         # Put the selected function name into the command line buffer
         print -z "$func"
