@@ -186,3 +186,6 @@ yt_init() {
 
 # Modified to exclude forward slash for better path component deletion
 WORDCHARS='*?_-.[]~=&;!#$%^(){}<>'
+
+# opencode
+export PATH=/Users/Niteesh.Kanungo/.opencode/bin:$PATH
