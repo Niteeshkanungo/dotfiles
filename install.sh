@@ -46,28 +46,21 @@ if ! xcode-select -p >/dev/null 2>&1; then
     exit 1
 fi
 
-# Homebrew is required
-if ! command -v brew >/dev/null 2>&1; then
-    echo "❌ Homebrew not found." >&2
-    echo "   Install from https://brew.sh then re-run this script." >&2
-    exit 1
+# Check for Homebrew (optional)
+if command -v brew >/dev/null 2>&1; then
+    echo "🍺 Homebrew found. Checking dependencies..."
+    for pkg in "${BREW_PACKAGES[@]}"; do
+        if brew list --formula "$pkg" >/dev/null 2>&1; then
+            echo "   ✅ $pkg already installed, skipping."
+        else
+            echo "   📦 Installing $pkg..."
+            brew install "$pkg"
+        fi
+    done
+else
+    echo "ℹ️  Homebrew not found. Skipping brew package installation (zsh plugins)."
+    echo "   Dotfiles will use macOS native zsh configuration."
 fi
-
-# zsh should already exist on macOS; prefer Homebrew zsh when available
-if ! command -v zsh >/dev/null 2>&1; then
-    echo "🐚 zsh not found. Installing..."
-    brew install zsh
-fi
-
-# Install missing Homebrew dependencies (skip what is already present)
-for pkg in "${BREW_PACKAGES[@]}"; do
-    if brew list --formula "$pkg" >/dev/null 2>&1; then
-        echo "   ✅ $pkg already installed, skipping."
-    else
-        echo "   📦 Installing $pkg..."
-        brew install "$pkg"
-    fi
-done
 
 # Loop through files and create symlinks
 for file in "${FILES[@]}"; do

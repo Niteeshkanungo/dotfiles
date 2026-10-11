@@ -24,7 +24,8 @@ export CLICOLOR=1
 export BLOCKSIZE=1k
 
 # --- PATH additions (guarded against duplicates; safe to source twice) ---
-for _p in "$HOME/.local/bin" \
+for _p in "/Library/Developer/CommandLineTools/usr/bin" \
+          "$HOME/.local/bin" \
           "/Applications/Ollama.app/Contents/Resources" \
           "$HOME/.antigravity/antigravity/bin" \
           "$HOME/.antigravity-ide/antigravity-ide/bin"; do

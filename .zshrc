@@ -96,7 +96,8 @@ unset file
 [ -f ~/.zsh_learning.zsh ] && source ~/.zsh_learning.zsh
 
 # PATH mirror of ~/.zprofile for non-login shells (idempotent: skips dups)
-for _p in "$HOME/.local/bin" \
+for _p in "/Library/Developer/CommandLineTools/usr/bin" \
+          "$HOME/.local/bin" \
           "/Applications/Ollama.app/Contents/Resources" \
           "$HOME/.antigravity/antigravity/bin" \
           "$HOME/.antigravity-ide/antigravity-ide/bin"; do
