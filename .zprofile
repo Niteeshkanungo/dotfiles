@@ -26,6 +26,7 @@ export BLOCKSIZE=1k
 # --- PATH additions (guarded against duplicates; safe to source twice) ---
 for _p in "/Library/Developer/CommandLineTools/usr/bin" \
           "$HOME/.local/bin" \
+          "$HOME/.opencode/bin" \
           "/Applications/Ollama.app/Contents/Resources" \
           "$HOME/.antigravity/antigravity/bin" \
           "$HOME/.antigravity-ide/antigravity-ide/bin"; do
