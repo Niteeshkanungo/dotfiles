@@ -1,15 +1,14 @@
-
-# Antigravity: Modified to point to standard hidden home location instead of ~/dotfiles/
+# ~/.zprompt — Modern & detailed 2-line zsh prompt
 source "${HOME}/.shared_prompt"
 
-PS1="\$(prompt_venv)" # virtual environment
-PS1+="%{${bold}%}"
-PS1+="%{${userStyle}%}%n@%m" # user@host
-PS1+="%{${white}%} "          # space
-PS1+="%{${green}%}%1~"        # working directory (short)
-PS1+="\$(prompt_git)" # Git repository details
-PS1+="%{${white}%} \$ %{${reset}%}" # `$` (and reset color)
+setopt PROMPT_SUBST
+
+# Line 1: User in Directory on Git status (VirtualEnv)
+# Line 2: Dynamic status arrow (Green on success, Red on error)
+PROMPT=$'\n╭─ %F{cyan}%Bniteeshkanungo%b%f in %F{blue}%B%~%b%f$(prompt_git)$(prompt_venv)\n╰─ %(?.%F{green}.%F{red})❯%f '
+export PROMPT
+PS1="$PROMPT"
 export PS1
 
-PS2="%{${yellow}%}→ %{${reset}%}"
+PS2="%F{yellow}→%f "
 export PS2
